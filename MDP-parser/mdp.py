@@ -3,7 +3,6 @@ from gramLexer import gramLexer
 from gramListener import gramListener
 from gramParser import gramParser
 import numpy as np
-import sys
 
         
 class gramPrintListener(gramListener):
@@ -52,18 +51,21 @@ class gramSaverMDP(gramListener):
         try:
             i_act = np.where(self.mdp.actions == act)[0][0]
         except:
-            raise Exception(f"Action {act} non définie dans l'en-tête.")
+            raise Exception(f"Action {act} not defined in header.")
         try:
             i_dep = np.where(self.mdp.states == dep)[0][0]
         except:
-            raise Exception(f"Etat de départ {dep} non défini dans l'en-tête.")
+            raise Exception(f"Start state {dep} not defined in header.")
+
+        if np.sum(self.mdp.P[i_act][i_dep]) > 0:
+            raise Exception(f'Transitions from state {dep} with action {act} defined several times.')
         
         for i in range(len(ids)):
             target = ids[i]
             try:
                 i_target = np.where(self.mdp.states == target)[0][0]
             except:
-                raise Exception(f"Etat cible {target} non défini dans l'en-tête.")
+                raise Exception(f"Target state {target} not defined in header.")
             weight = weights[i]
             self.mdp.P[i_act, i_dep, i_target] = weight
         
@@ -76,19 +78,23 @@ class gramSaverMDP(gramListener):
         try:
             i_dep = np.where(self.mdp.states == dep)[0][0]
         except:
-            raise Exception(f"Etat de départ {dep} non défini dans l'en-tête.")
+            raise Exception(f"Start state {dep} not defined in header.")
+
+        if np.sum(self.mdp.P[0][i_dep]) > 0:
+            raise Exception(f'Transitions from state {dep} defined several times.')
+        
 
         for i in range(len(ids)):
             target = ids[i]
             try:
                 i_target = np.where(self.mdp.states == target)[0][0]
             except:
-                raise Exception(f"Etat cible {target} non défini dans l'en-tête.")
+                raise Exception(f"Target state {target} not defined in header.")
             weight = weights[i]
             self.mdp.P[0, i_dep, i_target] = weight
     
     def get_mdp(self):
-        self.mdp.validation()
+        self.mdp.validationAndNormalisation()
         return self.mdp
 
 class MDP:
@@ -100,13 +106,70 @@ class MDP:
         self.P = np.zeros((len(self.actions), len(self.states), len(self.states)))
     
     def __repr__(self):
-        string = "\nMarkovian Decision Process\nActions : " + str(self.actions) + "\nEtats : " + str(self.states)
+        string = "\nMarkovian Decision Process\nActions : " + str(self.actions) + "\States : " + str(self.states)
         for i in range(len(self.actions)):
             string += f"\nAction {self.actions[i]} : \n{self.P[i]}"
         return string
 
-    def validation(self):
-        pass
+    def validationAndNormalisation(self):
+        mdp_dep_act_tar = self.P.transpose((1,0,2))
+        
+        for i_dep in range(mdp_dep_act_tar.shape[0]):
+            if np.sum(mdp_dep_act_tar[i_dep]) == 0:
+                print(f'WARNING : no transition defined from state {self.states[i_dep]}')
+                print(f'\t>> Add a loop from {self.states[i_dep]}')
+                mdp_dep_act_tar[i_dep][0][i_dep] = 1
+
+            for i_act in range(mdp_dep_act_tar.shape[1]):
+                sum = np.sum(mdp_dep_act_tar[i_dep][i_act])
+                if sum > 0:
+                    mdp_dep_act_tar[i_dep][i_act] /= sum
+
+            if np.sum(mdp_dep_act_tar[i_dep][1:]) > 0 and np.sum(mdp_dep_act_tar[i_dep][0]) > 0:
+                raise Exception(f'Conflict of transitions from state {self.states[i_dep]} ')
+
+    def possibleActions(self, i_dep):
+        act_tar = self.P.transpose((1,0,2))[i_dep]
+        return [i_act for i_act in range(act_tar.shape[0]) if np.sum(act_tar[i_act]) > 0]
+        
+        
+
+
+class Simulation:
+    def __init__(self, mdp, automatic=True):
+        self.mdp = mdp
+        self.automatic = automatic
+        self.i_currentState = 0
+
+    def next(self):
+        i_possibleAction = self.mdp.possibleActions(self.i_currentState)
+        possibleAction = [self.mdp.actions[i_action] for i_action in i_possibleAction]
+        if self.automatic:
+            if i_possibleAction == [0]:
+                i_action = 0
+                print('Automatic transition')
+            else:
+                i_action = np.random.choice(size=1, a=i_possibleAction)[0]
+                print(f'Drawing of action {self.mdp.actions[i_action]}')
+        else:
+            if i_possibleAction == [0]:
+                i_action = 0
+                print('Automatic transition')
+            else:
+                print(f'Possibles actions : {[self.mdp.actions[pa] for pa in i_possibleAction]}')
+                action = ""
+                while action not in possibleAction:
+                    print("Enter an action :")
+                    action = input()
+
+                i_action = np.where(self.mdp.actions == action)[0][0]
+
+        new_state = np.random.choice(a=self.mdp.P.shape[2], size=1, p=self.mdp.P[i_action][self.i_currentState])[0]
+        print(f" >> Transition from state {self.mdp.states[self.i_currentState]} to state {self.mdp.states[new_state]}\n")
+
+        self.i_currentState = new_state
+
+
 
 def main():
     lexer = gramLexer(FileStream("ex2.mdp")) 
@@ -119,7 +182,11 @@ def main():
     walker.walk(printer, tree)
     walker.walk(saver, tree)
     mdp = saver.get_mdp()
-    print(mdp)
+
+    print('\n\n#################   Simulation Start   #################\n')
+    simu = Simulation(mdp, automatic=True)
+    for i in range(10000):
+        simu.next()
 
 if __name__ == '__main__':
     main()
