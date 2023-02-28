@@ -140,6 +140,8 @@ class Simulation:
         self.mdp = mdp
         self.automatic = automatic
         self.i_currentState = 0
+        self.i_previousState = None
+        self.actionUsed = None
 
     def next(self):
         i_possibleAction = self.mdp.possibleActions(self.i_currentState)
@@ -148,13 +150,16 @@ class Simulation:
             if i_possibleAction == [0]:
                 i_action = 0
                 print('Automatic transition')
+                self.actionUsed = None
             else:
                 i_action = np.random.choice(size=1, a=i_possibleAction)[0]
                 print(f'Drawing of action {self.mdp.actions[i_action]}')
+                self.actionUsed = self.mdp.actions[i_action]
         else:
             if i_possibleAction == [0]:
                 i_action = 0
                 print('Automatic transition')
+                self.actionUsed = None
             else:
                 print(f'Possibles actions : {[self.mdp.actions[pa] for pa in i_possibleAction]}')
                 action = ""
@@ -163,10 +168,12 @@ class Simulation:
                     action = input()
 
                 i_action = np.where(self.mdp.actions == action)[0][0]
+                self.actionUsed = self.mdp.actions[i_action]
 
         new_state = np.random.choice(a=self.mdp.P.shape[2], size=1, p=self.mdp.P[i_action][self.i_currentState])[0]
         print(f" >> Transition from state {self.mdp.states[self.i_currentState]} to state {self.mdp.states[new_state]}\n")
 
+        self.i_previousState = self.i_currentState
         self.i_currentState = new_state
 
 
