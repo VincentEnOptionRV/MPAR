@@ -79,7 +79,7 @@ class MDPGraph:
                         weight = transitions[ind_etat, ind_action, ind_destination]
                         if weight > 0:
                             self.G.add_edge(action_etat, destination)
-                            self.edge_labels[(action_etat, destination)] = weight
+                            self.edge_labels[(action_etat, destination)] = round(weight,2)
                             self.edge_width[(action_etat, destination)] = 0.4*self.r
                             self.curved_edges.append((action_etat, destination))
                             self.edge_alpha[(action_etat, destination)] = 1
@@ -108,7 +108,7 @@ class MDPGraph:
         Graph(self.G, node_layout=self.node_layout, 
               edge_width=self.edge_width, edge_color=self.edge_color, edge_alpha=self.edge_alpha, edge_layout=self.edge_layout, arrows=True,
               node_size=self.node_size, node_color = self.node_color, node_edge_color=self.node_edge_color, node_edge_width=0.3*self.r,
-              node_labels=self.labels, node_label_fontdict=dict(size=20*self.r), edge_labels=self.edge_labels)
+              node_labels=self.labels, edge_labels=self.edge_labels, edge_label_fontdict=dict(size=10*self.r))
 
     def update(self):
         for node in self.node_color.keys():
@@ -144,10 +144,10 @@ class MDPGraph:
 
 
 def check_auto():
-    if len(sys.argv) <= 3:
+    if len(sys.argv) <= 4:
         print("Automatic progress engaged")
         auto = True
-    elif sys.argv[3] == 'm':
+    elif sys.argv[4] == 'm':
         print("Manual progress engaged")
         auto = False
     else:
@@ -155,27 +155,34 @@ def check_auto():
     return auto
 
 def check_n():
-    if len(sys.argv) <= 1:
+    if len(sys.argv) <= 2:
         n = 100
     else:
-        n = int(sys.argv[1])
+        n = int(sys.argv[2])
     print(f"Number of iterations of the simulation : {n}")
     return n
 
 def check_pause():
-    if len(sys.argv) <= 2:
+    if len(sys.argv) <= 3:
         t = 2.0
     else:
-        t = float(sys.argv[2])
+        t = float(sys.argv[3])
     print(f"Time per iteration : {t} s")
     return t
 
+def check_file():
+    if len(sys.argv) <= 1:
+        f = "ex2.mdp"
+    else:
+        f = str(sys.argv[1])
+    return f
+
 def main():
     half_pause_time = check_pause()/2
-    plt.figure(figsize=(10,10))
+    # plt.figure(figsize=(6,6))
 
     n = check_n()
-    graphe = MDPGraph("ex2.mdp", check_auto())
+    graphe = MDPGraph(check_file(), check_auto())
     plt.ion()
     plt.show()
 
