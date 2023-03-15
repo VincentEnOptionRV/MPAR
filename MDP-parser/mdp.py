@@ -10,11 +10,13 @@ class gramPrintListener(gramListener):
     def __init__(self):
         pass
         
-    def enterStatesnoreward(self, ctx):
+    def enterStatenoreward(self, ctx):
         print("States: %s" % str([str(x) for x in ctx.ID()]))
+        
 
-    def enterStatesreward(self, ctx):
-        pass
+    def enterStatereward(self, ctx):
+        print(f"States: {[str(x) + ':' + str(y) for x, y in zip(ctx.ID(), ctx.INT())]}")
+
 
     def enterDefactions(self, ctx):
         print("Actions: %s" % str([str(x) for x in ctx.ID()]))
@@ -237,7 +239,7 @@ class Simulation:
 
 
 def main():
-    lexer = gramLexer(FileStream("dice.mdp")) 
+    lexer = gramLexer(FileStream("ex.mdp")) 
     stream = CommonTokenStream(lexer)
     parser = gramParser(stream)
     tree = parser.program()
