@@ -40,14 +40,17 @@ class gramSaverMDP(gramListener):
     def __init__(self):
         pass
         
+
     def enterStatenoreward(self, ctx):
         self.states = [str(x) for x in ctx.ID()]
+        
 
     def enterStatereward(self, ctx):
-        pass
+        self.states = [str(x) for x in ctx.ID()]
+        self.rewards = [int(str(x)) for x in ctx.INT()]
 
     def enterDefactions(self, ctx):
-        self.mdp = MDP(self.states, [str(x) for x in ctx.ID()])
+        self.mdp = MDP(self.states, [str(x) for x in ctx.ID()], self.rewards)
 
 
     def enterTransact(self, ctx):
@@ -108,10 +111,12 @@ class gramSaverMDP(gramListener):
 class MDP:
     epsilonAction = "__epsilonAction__" # Action quand il n'y a pas de non déterminisme
 
-    def __init__(self, states, actions):
+    def __init__(self, states, actions, rewards=None):
         self.states = np.array(states)
         self.actions = np.array([MDP.epsilonAction] + actions)
         self.P = np.zeros((len(self.actions), len(self.states), len(self.states)))
+        if rewards == None: self.rewards
+        else: self.rewards = np.array(rewards)
     
     def __repr__(self):
         string = "\nMarkovian Decision Process\nActions : " + str(self.actions) + "\States : " + str(self.states)
@@ -255,7 +260,7 @@ def main():
     # for i in range(10000):
     #     simu.next()
     # print(simu.monteCarlo('S4', 5, 0.01, 0.01))
-    print(simu.SPRT(0.16, 1e-3, 0.01, 0.01, 'S7', 10))
+    # print(simu.SPRT(0.16, 1e-3, 0.01, 0.01, 'S7', 10))
 
 
 if __name__ == '__main__':
