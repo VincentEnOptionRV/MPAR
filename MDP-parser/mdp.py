@@ -239,7 +239,7 @@ class Simulation:
 
 
 def main():
-    lexer = gramLexer(FileStream("ex.mdp")) 
+    lexer = gramLexer(FileStream("ex2.mdp")) 
     stream = CommonTokenStream(lexer)
     parser = gramParser(stream)
     tree = parser.program()

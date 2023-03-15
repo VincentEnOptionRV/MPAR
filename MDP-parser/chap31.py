@@ -1,15 +1,39 @@
 import numpy as np
-from numpy.linalg import norm
-Vn = np.array([0.]*5)
-Vnp1 = np.array([0.]*5)
+import random
+Qt = np.zeros((5,3))
+Qtp1 = np.zeros((5,3))
 rs = [0,5,100,500,3]
-gamma = 1/2
-n = 0
-print(f"{n = }, {Vn = }")
-while(n == 0 or norm(Vnp1 -Vn) > 1):
-    Vn = Vnp1.copy()
-    Vnp1[0] = gamma*max(0.5*Vn[1] + 0.5*Vn[2], 0.1*Vn[3] + 0.9*Vn[4])
-    for i in range(1,5):
-        Vnp1[i] = rs[i] + gamma*Vn[0]
-    n = n+1
-    print(f"{n = }, {Vn = }, {Vnp1 = }, {norm(Vnp1 -Vn) = }")
+
+gamma = 0.5
+st = 0
+stp1 = 0
+
+def chooseAction(st):
+    if st == 0:
+        return random.randint(1,2)
+    else:
+        return 0
+
+def simulate(st,at):
+    if st == 0:
+        if at == 1:
+            return random.randint(1,2)
+        else:
+            tirage = random.randint(1,10)
+            if tirage == 1:
+                return 4
+            else:
+                return 3
+    else:
+        return 0
+
+Ttot = 1000
+for t in range(Ttot):
+    st = stp1
+    at = chooseAction(st)
+    stp1 = simulate(st,at)
+    rt = rs[stp1]
+    Qt = Qtp1.copy()
+    dt = rt + gamma*np.max(Qt[stp1]) - Qt[st,at]
+    Qtp1[st,at] = Qt[st,at] + 1/(t+1)*dt
+print(f"{Qtp1 = }")
