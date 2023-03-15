@@ -10,8 +10,11 @@ class gramPrintListener(gramListener):
     def __init__(self):
         pass
         
-    def enterDefstates(self, ctx):
+    def enterStatesnoreward(self, ctx):
         print("States: %s" % str([str(x) for x in ctx.ID()]))
+
+    def enterStatesreward(self, ctx):
+        pass
 
     def enterDefactions(self, ctx):
         print("Actions: %s" % str([str(x) for x in ctx.ID()]))
@@ -35,8 +38,11 @@ class gramSaverMDP(gramListener):
     def __init__(self):
         pass
         
-    def enterDefstates(self, ctx):
+    def enterStatesnoreward(self, ctx):
         self.states = [str(x) for x in ctx.ID()]
+
+    def enterStatesreward(self, ctx):
+        pass
 
     def enterDefactions(self, ctx):
         self.mdp = MDP(self.states, [str(x) for x in ctx.ID()])
