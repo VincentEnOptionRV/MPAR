@@ -38,10 +38,10 @@ class gramSaverMDP(gramListener):
     def __init__(self):
         pass
         
-    def enterStatesnoreward(self, ctx):
+    def enterStatenoreward(self, ctx):
         self.states = [str(x) for x in ctx.ID()]
 
-    def enterStatesreward(self, ctx):
+    def enterStatereward(self, ctx):
         pass
 
     def enterDefactions(self, ctx):
