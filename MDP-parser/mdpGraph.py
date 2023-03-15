@@ -100,15 +100,15 @@ class MDPGraph:
         self.initial_node_edge_color = self.node_edge_color.copy()
     
     def layouts(self):
-        self.node_layout = get_fruchterman_reingold_layout(list(self.G.edges), edge_weights=self.edge_weights, origin=(0.2,0.2), scale=(0.5,0.5))
-        self.edge_layout = get_curved_edge_paths(self.curved_edges, node_positions=self.node_layout, k=0.05, bundle_parallel_edges=False, selfloop_radius = 0.001)
+        self.node_layout = get_fruchterman_reingold_layout(list(self.G.edges), edge_weights=self.edge_weights, origin=(0.3,0.3), scale=(1,0.75))
+        self.edge_layout = get_curved_edge_paths(self.curved_edges, node_positions=self.node_layout, k=0.05, bundle_parallel_edges=False, selfloop_radius = 0.001, scale=(2,1.5))
         self.edge_layout.update(get_curved_edge_paths(self.straight_edges, node_positions=self.node_layout, k=0.001))
 
     def show(self):
         Graph(self.G, node_layout=self.node_layout, 
               edge_width=self.edge_width, edge_color=self.edge_color, edge_alpha=self.edge_alpha, edge_layout=self.edge_layout, arrows=True,
               node_size=self.node_size, node_color = self.node_color, node_edge_color=self.node_edge_color, node_edge_width=0.3*self.r,
-              node_labels=self.labels, edge_labels=self.edge_labels, edge_label_fontdict=dict(size=10*self.r))
+              node_labels=self.labels, node_label_fontdict=dict(size=20/np.log(len(self.G.nodes)+1)), edge_labels=self.edge_labels, edge_label_fontdict=dict(size=25/np.log(1+len(self.G.edges))))
 
     def update(self):
         for node in self.node_color.keys():
@@ -184,6 +184,8 @@ def main():
     n = check_n()
     graphe = MDPGraph(check_file(), check_auto())
     plt.ion()
+    mng = plt.get_current_fig_manager()
+    mng.window.showMaximized()
     plt.show()
 
     print('\n#################   Simulation Start   #################\n')
