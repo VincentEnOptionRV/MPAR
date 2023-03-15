@@ -136,12 +136,13 @@ class MDP:
 
 
 class Simulation:
-    def __init__(self, mdp, automatic=True):
+    def __init__(self, mdp, automatic=True, verbose=True):
         self.mdp = mdp
         self.automatic = automatic
         self.i_currentState = 0
         self.i_previousState = None
         self.actionUsed = None
+        self.verbose = verbose
 
     def next(self):
         i_possibleAction = self.mdp.possibleActions(self.i_currentState)
@@ -149,11 +150,11 @@ class Simulation:
         if self.automatic:
             if i_possibleAction == [0]:
                 i_action = 0
-                print('Automatic transition')
+                if self.verbose: print('Automatic transition')
                 self.actionUsed = None
             else:
                 i_action = np.random.choice(size=1, a=i_possibleAction)[0]
-                print(f'Drawing of action {self.mdp.actions[i_action]}')
+                if self.verbose: print(f'Drawing of action {self.mdp.actions[i_action]}')
                 self.actionUsed = self.mdp.actions[i_action]
         else:
             if i_possibleAction == [0]:
@@ -171,15 +172,66 @@ class Simulation:
                 self.actionUsed = self.mdp.actions[i_action]
 
         new_state = np.random.choice(a=self.mdp.P.shape[2], size=1, p=self.mdp.P[i_action][self.i_currentState])[0]
-        print(f" >> Transition from state {self.mdp.states[self.i_currentState]} to state {self.mdp.states[new_state]}\n")
+        if self.verbose: print(f" >> Transition from state {self.mdp.states[self.i_currentState]} to state {self.mdp.states[new_state]}\n")
 
         self.i_previousState = self.i_currentState
         self.i_currentState = new_state
 
+    def monteCarlo(self, s, n, epsilon, delta):
+        i_s = np.where(self.mdp.states == s)[0][0]
+        N = int((np.log(2) - np.log(delta)) / (2*epsilon)**2)
+        print(f'\r>> Nombre de simulations : {N}')
+        r = 0
+
+        for _ in range(N):
+            self.__init__(self.mdp, True, False)
+
+            for _ in range(n + 1):
+                if self.i_currentState == i_s:
+                    r += 1
+                    break
+                self.next()
+
+        return r / N
+
+    def SPRT(self, theta, epsilon, alpha, beta, s, n):
+        i_s = np.where(self.mdp.states == s)[0][0]
+
+        dm = 0
+        m = 0
+        gamma1 = theta - epsilon
+        gamma0 = theta + epsilon
+
+        logA = np.log((1 - beta) / alpha)
+        logB = np.log(beta / (1 - alpha))
+
+
+        logRm = dm * np.log(gamma1) + (m-dm)*np.log(1 - gamma1) - dm * np.log(gamma0) - (m-dm)*np.log(1 - gamma0)
+
+        while logB < logRm and  logRm < logA:
+            self.__init__(self.mdp, True, False)
+
+            m += 1
+            for _ in range(n):
+                self.next()
+                if self.i_currentState == i_s:
+                    dm += 1
+                    logRm += np.log(gamma1 / gamma0) - np.log(1 - gamma1) + np.log(1 - gamma0)
+                    break
+            
+            logRm += np.log(1 - gamma1) - np.log(1 - gamma0)
+
+        if logA <= logRm:
+            print('Accept H1')
+
+        if logRm <= logB:
+            print('Accept H0')
+
+        return m, dm/m
 
 
 def main():
-    lexer = gramLexer(FileStream("ex2.mdp")) 
+    lexer = gramLexer(FileStream("dice.mdp")) 
     stream = CommonTokenStream(lexer)
     parser = gramParser(stream)
     tree = parser.program()
@@ -190,10 +242,13 @@ def main():
     walker.walk(saver, tree)
     mdp = saver.get_mdp()
 
-    print('\n\n#################   Simulation Start   #################\n')
     simu = Simulation(mdp, automatic=True)
-    for i in range(10000):
-        simu.next()
+    # print('\n\n#################   Simulation Start   #################\n')
+    # for i in range(10000):
+    #     simu.next()
+    # print(simu.monteCarlo('S4', 5, 0.01, 0.01))
+    print(simu.SPRT(0.16, 1e-3, 0.01, 0.01, 'S7', 10))
+
 
 if __name__ == '__main__':
     main()
