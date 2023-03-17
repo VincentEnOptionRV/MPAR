@@ -5,7 +5,7 @@ from netgraph import Graph, get_curved_edge_paths, get_fruchterman_reingold_layo
 import sys
 
 class MDPGraph:
-    def __init__(self, fichier, automatic=True):
+    def __init__(self, fichier):
         lexer = gramLexer(FileStream(fichier)) 
         stream = CommonTokenStream(lexer)
         parser = gramParser(stream)
@@ -19,8 +19,6 @@ class MDPGraph:
         self.mdp_graph()
         self.label()
         self.layouts()
-
-        self.simulation = Simulation(self.mdp, automatic)
 
     def label(self):
         self.labels = {}
@@ -142,34 +140,6 @@ class MDPGraph:
         self.node_color[self.mdp.states[self.simulation.i_currentState]] = "#00b31b"
         
 
-
-def check_auto():
-    if len(sys.argv) <= 5:
-        print("Automatic progress engaged")
-        auto = True
-    elif sys.argv[5] == 'm':
-        print("Manual progress engaged")
-        auto = False
-    else:
-        auto = True
-    return auto
-
-def check_n():
-    if len(sys.argv) <= 3:
-        n = 100
-    else:
-        n = int(sys.argv[3])
-    print(f"Number of iterations of the simulation : {n}")
-    return n
-
-def check_pause():
-    if len(sys.argv) <= 4:
-        t = 1.0
-    else:
-        t = float(sys.argv[4])
-    print(f"Time per iteration : {t} s")
-    return t
-
 def check_file():
     if len(sys.argv) <= 1:
         f = "ex2.mdp"
@@ -181,41 +151,75 @@ def check_mode():
     if len(sys.argv) <= 2:
         mode = 0
     else:
-        mode = int(sys.argv[2])
+        mode_dict = {
+            "simu":0,
+            "acces":1,
+            "smc":2,
+            "qlearn":3
+        }
+        try:
+            mode = mode_dict[str(sys.argv[2])]
+        except:
+            raise Exception("Erreur dans le mode. Modes possibles :\nsimu (simulation), \nacces (ModCheck accessibilité), \smc (ModCheck Statistique), \nqlearn (Qlearning)")
     return mode
 
 def main():
-    # python mdpGraph.py fichier mode nb_iter pause_time manuel
-    half_pause_time = check_pause()/2
-    # plt.figure(figsize=(6,6))
-
-    n = check_n()
-    graphe = MDPGraph(check_file(), check_auto())
+    # python mdpGraph.py fichier mode
+    graphe = MDPGraph(check_file())
 
     mode = check_mode()
 
     plt.ion()
     plt.show()
 
-    print('\n#################   Simulation Start   #################\n')
-    for _ in range(n):
+    if mode == 0:
+        print("Entrer le temps de pause (en seconde) entre deux frames de la simulation :")
+        half_pause_time = int(input())/2
+        print("Entrer le nombre d'itérations de la simulation :")
+        n = int(input())
+        ok = False
+        print("Mode automatique ? O/N")
+        while not ok:
+            auto = str(input())
+            ok = auto in ['O','o','N','n']
+            auto = auto == 'O' or auto == 'o'
+        
+        graphe.simulation = Simulation(graphe.mdp, auto)
 
-        graphe.update()
-        plt.clf()
-        graphe.show()
-        plt.pause(half_pause_time)
+        print('\n#################   Simulation Start   #################\n')
+        for _ in range(n):
 
-        graphe.update2()
-        plt.clf()
-        graphe.show()
-        plt.pause(half_pause_time)
+            graphe.update()
+            plt.clf()
+            graphe.show()
+            plt.pause(half_pause_time)
 
-        graphe.simulation.next()
+            graphe.update2()
+            plt.clf()
+            graphe.show()
+            plt.pause(half_pause_time)
 
-    plt.ioff()
-    print('#################   Simulation End   #################\n')
-    print("Close window to exit.")
-    plt.show()
+            graphe.simulation.next()
+
+        plt.ioff()
+        print('#################   Simulation End   #################\n')
+        print("Close window to exit.")
+        plt.show()
+    
+    elif mode == 1:
+        print("#################   Model Checking : Accessibilité   #################")
+        pass
+
+    elif mode == 2:
+        print("#################   Model Checking Statistique   #################")
+        pass
+
+    elif mode == 3:
+        print("#################   Qlearning   #################")
+        print("Entrer le nombre d'itération de l'algorithme")
+        n = input()
+        print("Calcul du meilleur adversaire...")
+        adv, advVal
 
 if __name__ == '__main__':
     main()

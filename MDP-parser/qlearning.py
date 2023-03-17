@@ -24,6 +24,6 @@ def qlearning(mdp:MDP, gamma, Ttot):
     # At this point, Qtp1 is supposedly close to Q*
     
     bestAdversary = np.argmax(a=Qtp1, axis=1)
-    # bestAdversaryValues = np.max(a=Qtp1, axis=1) # debug
+    bestAdversaryValues = np.max(a=Qtp1, axis=1)
 
-    return bestAdversary
+    return bestAdversary, bestAdversaryValues
