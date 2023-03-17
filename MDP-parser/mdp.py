@@ -143,13 +143,12 @@ class MDP:
                 raise Exception(f'Conflict of transitions from state {self.states[i_dep]} ')
 
     def possibleActions(self):
-        self.accessible = [[]]*len(self.states)
+        self.accessible = [[] for i in range(len(self.states))]
         Pflat = np.sum(a=self.P, axis=2)
         for i_state in range(self.P.shape[1]):
             for i_act in range(self.P.shape[0]):
                 if Pflat[i_act,i_state] > 0:
                     self.accessible[i_state].append(i_act)
-        print(self.accessible)
         
         
 
