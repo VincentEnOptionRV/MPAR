@@ -149,6 +149,7 @@ class MDP:
             for i_act in range(self.P.shape[0]):
                 if Pflat[i_act,i_state] > 0:
                     self.accessible[i_state].append(i_act)
+        print(self.accessible)
         
         
 
