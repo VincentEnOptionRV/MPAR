@@ -50,7 +50,11 @@ class gramSaverMDP(gramListener):
         self.rewards = [int(str(x)) for x in ctx.INT()]
 
     def enterDefactions(self, ctx):
-        self.mdp = MDP(self.states, [str(x) for x in ctx.ID()], self.rewards)
+        if hasattr(self, "rewards"):
+            self.mdp = MDP(self.states, [str(x) for x in ctx.ID()], self.rewards)
+        else:
+            self.mdp = MDP(self.states, [str(x) for x in ctx.ID()])
+
 
 
     def enterTransact(self, ctx):
@@ -249,7 +253,7 @@ class Simulation:
 
 
 def main():
-    lexer = gramLexer(FileStream("2bras.mdp")) 
+    lexer = gramLexer(FileStream("fichier2-mc.mdp")) 
     stream = CommonTokenStream(lexer)
     parser = gramParser(stream)
     tree = parser.program()
@@ -259,6 +263,11 @@ def main():
     walker.walk(printer, tree)
     walker.walk(saver, tree)
     mdp = saver.get_mdp()
+
+    import modelChecking
+    adversary = modelChecking.buildAdversary(mdp)
+    modelChecking.modelChecking(mdp, adversary, ['F'], 10)
+    
 
     # simu = Simulation(mdp, automatic=True)
     # print('\n\n#################   Simulation Start   #################\n')
