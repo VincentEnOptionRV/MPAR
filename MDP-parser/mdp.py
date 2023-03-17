@@ -260,8 +260,6 @@ def main():
     walker.walk(saver, tree)
     mdp = saver.get_mdp()
 
-    from qlearning import qlearning
-    print(qlearning(mdp, 0.5, 1000))
     # simu = Simulation(mdp, automatic=True)
     # print('\n\n#################   Simulation Start   #################\n')
     # for i in range(10000):

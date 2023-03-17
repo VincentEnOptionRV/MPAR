@@ -144,10 +144,10 @@ class MDPGraph:
 
 
 def check_auto():
-    if len(sys.argv) <= 4:
+    if len(sys.argv) <= 5:
         print("Automatic progress engaged")
         auto = True
-    elif sys.argv[4] == 'm':
+    elif sys.argv[5] == 'm':
         print("Manual progress engaged")
         auto = False
     else:
@@ -155,18 +155,18 @@ def check_auto():
     return auto
 
 def check_n():
-    if len(sys.argv) <= 2:
+    if len(sys.argv) <= 3:
         n = 100
     else:
-        n = int(sys.argv[2])
+        n = int(sys.argv[3])
     print(f"Number of iterations of the simulation : {n}")
     return n
 
 def check_pause():
-    if len(sys.argv) <= 3:
-        t = 2.0
+    if len(sys.argv) <= 4:
+        t = 1.0
     else:
-        t = float(sys.argv[3])
+        t = float(sys.argv[4])
     print(f"Time per iteration : {t} s")
     return t
 
@@ -177,12 +177,23 @@ def check_file():
         f = str(sys.argv[1])
     return f
 
+def check_mode():
+    if len(sys.argv) <= 2:
+        mode = 0
+    else:
+        mode = int(sys.argv[2])
+    return mode
+
 def main():
+    # python mdpGraph.py fichier mode nb_iter pause_time manuel
     half_pause_time = check_pause()/2
     # plt.figure(figsize=(6,6))
 
     n = check_n()
     graphe = MDPGraph(check_file(), check_auto())
+
+    mode = check_mode()
+
     plt.ion()
     plt.show()
 
