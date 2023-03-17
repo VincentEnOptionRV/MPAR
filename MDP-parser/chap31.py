@@ -43,5 +43,3 @@ for t in range(Ttot):
 print(f"{Qtp1 = }")
 bestAdversary = np.argmax(a=Qtp1, axis=1)
 print(f"{bestAdversary = }")
-test = np.sum(Qtp1, axis=1)
-print(f"{test = }")

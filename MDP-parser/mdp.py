@@ -105,6 +105,7 @@ class gramSaverMDP(gramListener):
             self.mdp.P[0, i_dep, i_target] = weight
     
     def get_mdp(self):
+        self.mdp.possibleActions()
         self.mdp.validationAndNormalisation()
         return self.mdp
 
@@ -117,7 +118,6 @@ class MDP:
         self.P = np.zeros((len(self.actions), len(self.states), len(self.states)))
         if rewards == None: self.rewards = None
         else: self.rewards = np.array(rewards)
-        self.accessible = self.possibleActions()
     
     def __repr__(self):
         string = "\nMarkovian Decision Process\nActions : " + str(self.actions) + "\States : " + str(self.states)
@@ -143,13 +143,12 @@ class MDP:
                 raise Exception(f'Conflict of transitions from state {self.states[i_dep]} ')
 
     def possibleActions(self):
-        accessible = [[]]*len(self.states)
+        self.accessible = [[]]*len(self.states)
         Pflat = np.sum(a=self.P, axis=2)
         for i_state in range(self.P.shape[1]):
             for i_act in range(self.P.shape[0]):
                 if Pflat[i_act,i_state] > 0:
-                    accessible[i_state].append(i_act)
-        return accessible
+                    self.accessible[i_state].append(i_act)
         
         
 

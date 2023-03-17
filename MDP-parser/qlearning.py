@@ -1,4 +1,4 @@
-from mdp import *
+from mdp import MDP
 import random
 import numpy as np
 

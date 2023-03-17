@@ -184,8 +184,6 @@ def main():
     n = check_n()
     graphe = MDPGraph(check_file(), check_auto())
     plt.ion()
-    mng = plt.get_current_fig_manager()
-    mng.window.showMaximized()
     plt.show()
 
     print('\n#################   Simulation Start   #################\n')
