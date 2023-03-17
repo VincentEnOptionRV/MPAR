@@ -115,8 +115,9 @@ class MDP:
         self.states = np.array(states)
         self.actions = np.array([MDP.epsilonAction] + actions)
         self.P = np.zeros((len(self.actions), len(self.states), len(self.states)))
-        if rewards == None: self.rewards
+        if rewards == None: self.rewards = None
         else: self.rewards = np.array(rewards)
+        self.accessible = self.possibleActions()
     
     def __repr__(self):
         string = "\nMarkovian Decision Process\nActions : " + str(self.actions) + "\States : " + str(self.states)
@@ -141,9 +142,14 @@ class MDP:
             if np.sum(mdp_dep_act_tar[i_dep][1:]) > 0 and np.sum(mdp_dep_act_tar[i_dep][0]) > 0:
                 raise Exception(f'Conflict of transitions from state {self.states[i_dep]} ')
 
-    def possibleActions(self, i_dep):
-        act_tar = self.P.transpose((1,0,2))[i_dep]
-        return [i_act for i_act in range(act_tar.shape[0]) if np.sum(act_tar[i_act]) > 0]
+    def possibleActions(self):
+        accessible = [[]]*len(self.states)
+        Pflat = np.sum(a=self.P, axis=2)
+        for i_state in range(self.P.shape[1]):
+            for i_act in range(self.P.shape[0]):
+                if Pflat[i_act,i_state] > 0:
+                    accessible[i_state].append(i_act)
+        return accessible
         
         
 
@@ -158,7 +164,7 @@ class Simulation:
         self.verbose = verbose
 
     def next(self):
-        i_possibleAction = self.mdp.possibleActions(self.i_currentState)
+        i_possibleAction = self.mdp.accessible[self.i_currentState]
         possibleAction = [self.mdp.actions[i_action] for i_action in i_possibleAction]
         if self.automatic:
             if i_possibleAction == [0]:
