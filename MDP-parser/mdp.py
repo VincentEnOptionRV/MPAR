@@ -249,7 +249,7 @@ class Simulation:
 
 
 def main():
-    lexer = gramLexer(FileStream("ex2.mdp")) 
+    lexer = gramLexer(FileStream("2bras.mdp")) 
     stream = CommonTokenStream(lexer)
     parser = gramParser(stream)
     tree = parser.program()
@@ -260,7 +260,9 @@ def main():
     walker.walk(saver, tree)
     mdp = saver.get_mdp()
 
-    simu = Simulation(mdp, automatic=True)
+    from qlearning import qlearning
+    print(qlearning(mdp, 0.5, 1000))
+    # simu = Simulation(mdp, automatic=True)
     # print('\n\n#################   Simulation Start   #################\n')
     # for i in range(10000):
     #     simu.next()
