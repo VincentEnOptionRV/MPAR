@@ -109,8 +109,8 @@ class gramSaverMDP(gramListener):
             self.mdp.P[0, i_dep, i_target] = weight
     
     def get_mdp(self):
-        self.mdp.possibleActions()
         self.mdp.validationAndNormalisation()
+        self.mdp.possibleActions()
         return self.mdp
 
 class MDP:
@@ -152,8 +152,7 @@ class MDP:
         for i_state in range(self.P.shape[1]):
             for i_act in range(self.P.shape[0]):
                 if Pflat[i_act,i_state] > 0:
-                    self.accessible[i_state].append(i_act)
-        
+                    self.accessible[i_state].append(i_act)        
         
 
 
@@ -253,7 +252,7 @@ class Simulation:
 
 
 def main():
-    lexer = gramLexer(FileStream("fichier2-mc.mdp")) 
+    lexer = gramLexer(FileStream("dice.mdp")) 
     stream = CommonTokenStream(lexer)
     parser = gramParser(stream)
     tree = parser.program()
@@ -266,7 +265,7 @@ def main():
 
     import modelChecking
     adversary = modelChecking.buildAdversary(mdp)
-    modelChecking.modelChecking(mdp, adversary, ['F'], 10)
+    modelChecking.modelChecking(mdp, adversary, ['S12'], 3)
     
 
     # simu = Simulation(mdp, automatic=True)
