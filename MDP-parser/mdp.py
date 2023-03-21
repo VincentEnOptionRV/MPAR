@@ -48,6 +48,8 @@ class gramSaverMDP(gramListener):
     def enterStatereward(self, ctx):
         self.states = [str(x) for x in ctx.ID()]
         self.rewards = [int(str(x)) for x in ctx.INT()]
+        if len(self.rewards) != len(self.states):
+            raise Exception("Some states do not have rewards set up. Aborting.")
 
     def enterDefactions(self, ctx):
         if hasattr(self, "rewards"):
@@ -109,8 +111,8 @@ class gramSaverMDP(gramListener):
             self.mdp.P[0, i_dep, i_target] = weight
     
     def get_mdp(self):
-        self.mdp.possibleActions()
         self.mdp.validationAndNormalisation()
+        self.mdp.possibleActions()
         return self.mdp
 
 class MDP:

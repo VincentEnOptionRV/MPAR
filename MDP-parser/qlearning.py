@@ -1,6 +1,7 @@
 from mdp import MDP
 import random
 import numpy as np
+from tqdm import tqdm
 
 def qlearning(mdp:MDP, gamma, Ttot):
     n_etats = len(mdp.states)
@@ -11,7 +12,7 @@ def qlearning(mdp:MDP, gamma, Ttot):
     st = 0
     stp1 = 0
 
-    for t in range(Ttot):
+    for t in tqdm(range(Ttot)):
         st = stp1
         at = np.random.choice(a=mdp.accessible[st], size=1)[0]
         stp1 = np.random.choice(a=mdp.P.shape[2], size=1, p=mdp.P[at][st])[0]

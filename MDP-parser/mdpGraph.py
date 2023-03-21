@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 from netgraph import Graph, get_curved_edge_paths, get_fruchterman_reingold_layout
 import sys
+from qlearning import qlearning
 
 class MDPGraph:
     def __init__(self, fichier):
@@ -140,16 +141,26 @@ class MDPGraph:
         self.node_color[self.mdp.states[self.simulation.i_currentState]] = "#00b31b"
         
 
+def print_adv(mdp, adv):
+    oneNotZero = False
+    for i in range(len(adv)):
+        choix = adv[i]
+        if choix > 0:
+            oneNotZero = True
+            print(f"From state {mdp.states[i]}, chose action {mdp.actions[choix]}")
+    if not oneNotZero:
+        print("There are no decisions to take with this starting set of states or the number of iteration is too low.")
+
 def check_file():
     if len(sys.argv) <= 1:
-        f = "ex2.mdp"
+        raise Exception("Veuillez sélectionner un fichier .mdp à ouvrir")
     else:
         f = str(sys.argv[1])
     return f
 
 def check_mode():
     if len(sys.argv) <= 2:
-        mode = 0
+        raise Exception("Veuillez sélectionner un mode de fonctionnement. Modes possibles :\nsimu (simulation), \nacces (ModCheck accessibilité), \nsmc (ModCheck Statistique), \nqlearn (Qlearning)")
     else:
         mode_dict = {
             "simu":0,
@@ -215,11 +226,17 @@ def main():
         pass
 
     elif mode == 3:
+        if graphe.mdp.rewards is None:
+            print("Impossible de faire du Qlearning sur un MDP sans récompenses.")
         print("#################   Qlearning   #################")
+        print("Entrer la valeur de gamma pour l'algorithme")
+        gamma = float(input())
         print("Entrer le nombre d'itération de l'algorithme")
-        n = input()
+        n = int(input())
         print("Calcul du meilleur adversaire...")
-        adv, advVal
+        adv, advVal = qlearning(graphe.mdp, gamma, n)
+        print("Exécution de l'algorithme terminée !")
+        print_adv(graphe.mdp,adv)
 
 if __name__ == '__main__':
     main()
