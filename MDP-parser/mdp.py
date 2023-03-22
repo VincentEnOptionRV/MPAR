@@ -231,7 +231,7 @@ class Simulation:
 
         logRm = dm * np.log(gamma1) + (m-dm)*np.log(1 - gamma1) - dm * np.log(gamma0) - (m-dm)*np.log(1 - gamma0)
 
-        for _ in range(nb_simu):
+        for _ in tqdm.tqdm(range(nb_simu)):
             if logA <= logRm: return m, dm/m, False
             if logRm <= logB: return m, dm/m, True
            
@@ -247,6 +247,7 @@ class Simulation:
                     break
             
             logRm += np.log(1 - gamma1) - np.log(1 - gamma0)
+        print("Le nombre de simulation a été insufisant")
 
 
 def main():

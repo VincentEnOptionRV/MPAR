@@ -373,11 +373,14 @@ def main():
                         nmax = int(nmax)
                     except:
                         ok = False
-                m, dm, accept = graphe.simulation.SPRT(t, eps, a, b, etatsCibles, n, nmax)
-                if accept:
-                    print(f"Gamma >= theta + espsilon")
-                else:
-                    print(f"Gamma <= theta + espsilon")
+                try:
+                    m, dm, accept = graphe.simulation.SPRT(t, eps, a, b, etatsCibles, n, nmax)
+                    if accept:
+                        print(f"Gamma >= theta + espsilon")
+                    else:
+                        print(f"Gamma <= theta + espsilon")
+                except:
+                    pass
 
 
             plt.close()
