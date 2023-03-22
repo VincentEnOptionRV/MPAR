@@ -7,16 +7,18 @@ from qlearning import qlearning
 import modelChecking
 
 class MDPGraph:
-    def __init__(self, fichier):
-        lexer = gramLexer(FileStream(fichier)) 
-        stream = CommonTokenStream(lexer)
-        parser = gramParser(stream)
-        tree = parser.program()
-        saver = gramSaverMDP()
-        walker = ParseTreeWalker()
-        walker.walk(saver, tree)
-        mdp = saver.get_mdp()
-
+    def __init__(self, fichier, alreadyMDP=None):
+        if alreadyMDP is None:
+            lexer = gramLexer(FileStream(fichier)) 
+            stream = CommonTokenStream(lexer)
+            parser = gramParser(stream)
+            tree = parser.program()
+            saver = gramSaverMDP()
+            walker = ParseTreeWalker()
+            walker.walk(saver, tree)
+            mdp = saver.get_mdp()
+        else:
+            mdp = alreadyMDP
         self.mdp = mdp
         self.mdp_graph()
         self.label()
@@ -168,14 +170,14 @@ def check_mode():
     else:
         mode_dict = {
             "simu":0,
-            "acces":1,
+            "mc":1,
             "smc":2,
             "qlearn":3
         }
         try:
             mode = mode_dict[str(sys.argv[2])]
         except:
-            raise Exception("Erreur dans le mode. Modes possibles :\nsimu (simulation), \nacces (ModCheck accessibilité), \smc (ModCheck Statistique), \nqlearn (Qlearning)")
+            raise Exception("Erreur dans le mode. Modes possibles :\nsimu (simulation), \mc (Model Checking accessibilité), \smc (Model Checking Statistique), \nqlearn (Qlearning)")
     return mode
 
 def main():
@@ -208,6 +210,7 @@ def main():
             graphe.simulation = Simulation(graphe.mdp, auto)
 
             print('\n#################   Simulation Start   #################\n')
+            print(graphe.mdp)
             for _ in range(n):
 
                 graphe.update()
@@ -228,7 +231,7 @@ def main():
             plt.show()
         
         elif mode == 1:
-            print("#################   Model Checking : Accessibilité   #################")
+            print("#################   Model Checking   #################")
             if adversary is None:
                 adversary = modelChecking.buildAdversary(graphe.mdp)
             
@@ -267,6 +270,64 @@ def main():
 
         elif mode == 2:
             print("#################   Model Checking Statistique   #################")
+            print("Choisir une méthode de model checking statistique : Monte-Carlo ou SPRT (entrer 1 ou 2)")
+            ok = False
+            while not ok:
+                ok = True
+                m = input()
+                try:
+                    m = int(m)
+                    assert (m == 1 or m == 2)
+                except:
+                    ok = False
+            print("Définition des états cibles :")
+            etatsCibles = []
+            while len(etatsCibles) == 0:
+                print("Liste des états cibles vide.")
+                notDoneYet = True
+                while notDoneYet:
+                    print("Ajouter un état dans la liste des états cibles (laisser vide pour terminer)")
+                    e = input()
+                    if e == '':
+                        notDoneYet = False
+                    elif e in graphe.mdp.states:
+                        etatsCibles.append(e)
+                    else:
+                        print("État introuvable.")
+            graphe.simulation = Simulation(graphe.mdp, True)
+            if m == 1:
+                print("Entrer le nombre maximal de transitions autorisé.")
+                ok = False
+                while not ok:
+                    ok = True
+                    n = input()
+                    try:
+                        n = int(n)
+                    except:
+                        ok = False
+                print("Entrer la valeur de epsilon.")
+                ok = False
+                while not ok:
+                    ok = True
+                    eps = input()
+                    try:
+                        eps = float(eps)
+                    except:
+                        ok = False
+                print("Entrer la valeur de delta.")
+                ok = False
+                while not ok:
+                    ok = True
+                    d = input()
+                    try:
+                        d = float(d)
+                    except:
+                        ok = False
+                print(graphe.simulation.monteCarlo(etatsCibles, n, eps, d))
+            else:
+                
+                print(graphe.simulation.SPRT(0.16, 1e-3, 0.01, 0.01, 'S7', 10))
+
             plt.ioff()
             print("Close window to exit.")
             plt.show()
@@ -326,10 +387,10 @@ def main():
                 v = v == 'O' or v == 'o'
             if v:
                 end = False
-                print("Quel mode souhaitez vous lancer ? Modes possibles : simu (simulation), acces (ModCheck accessibilité), smc (ModCheck Statistique)")
+                print("Quel mode souhaitez vous lancer ? Modes possibles : simu (simulation), mc (Model Checking), smc (Model Checking Statistique)")
                 mode_dict = {
                     "simu":0,
-                    "acces":1,
+                    "mc":1,
                     "smc":2
                 }
                 wrong = True
@@ -342,7 +403,14 @@ def main():
                         wrong = True
                 
                 if mode == 0 or mode == 2: # alors on doit générer la mc, sinon pas la peine ça se fait tout seul dans le checking d'accessibilité.
-                    pass 
+                    mc = np.array([[graphe.mdp.P[adv[i_state]][i_state] for i_state in range(len(graphe.mdp.states))]])
+                    graphe.mdp = MDP(graphe.mdp.states, [])
+                    graphe.mdp.P = mc
+                    graphe.mdp.validationAndNormalisation()
+                    graphe.mdp.possibleActions()
+                    plt.clf()
+                    graphe = MDPGraph("",graphe.mdp)
+                    graphe.show()
                 else:
                     adversary = adv
             else:

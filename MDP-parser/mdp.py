@@ -201,7 +201,7 @@ class Simulation:
         self.i_currentState = new_state
 
     def monteCarlo(self, s, n, epsilon, delta):
-        i_s = np.where(self.mdp.states == s)[0][0]
+        i_s = [np.where(self.mdp.states == state)[0][0] for state in s]
         N = int((np.log(2) - np.log(delta)) / (2*epsilon)**2)
         print(f'\r>> Nombre de simulations : {N}')
         r = 0
@@ -210,7 +210,7 @@ class Simulation:
             self.__init__(self.mdp, True, False)
 
             for _ in range(n + 1):
-                if self.i_currentState == i_s:
+                if self.i_currentState in i_s:
                     r += 1
                     break
                 self.next()
