@@ -166,19 +166,19 @@ def check_file():
 
 def check_mode():
     if len(sys.argv) <= 2:
-        raise Exception("Veuillez sélectionner un mode de fonctionnement. Modes possibles :\nsimu (simulation), \nmc (Model Checking accessibilité), \nsmc (Model Checking Statistique), \nminmax (Model Checking par MinMax), \nqlearn (Qlearning)")
+        raise Exception("Veuillez sélectionner un mode de fonctionnement. Modes possibles :\nsimu (simulation), \nmc (Model Checking accessibilité), \nsmc (Model Checking Statistique), \nmax (Model Checking Max), \nqlearn (Qlearning)")
     else:
         mode_dict = {
             "simu":0,
             "mc":1,
             "smc":2,
-            "minmax":3,
+            "max":3,
             "qlearn":4
         }
         try:
             mode = mode_dict[str(sys.argv[2])]
         except:
-            raise Exception("Erreur dans le mode. Modes possibles :\nsimu (simulation), \nmc (Model Checking accessibilité), \nsmc (Model Checking Statistique), \nminmax (Model Checking par MinMax), \nqlearn (Qlearning)")
+            raise Exception("Erreur dans le mode. Modes possibles :\nsimu (simulation), \nmc (Model Checking accessibilité), \nsmc (Model Checking Statistique), \nmax (Model Checking Max), \nqlearn (Qlearning)")
     return mode
 
 def main():
@@ -369,7 +369,7 @@ def main():
             plt.close()
 
         elif mode == 3:
-            print("#################   Model Checking MinMax   #################")
+            print("#################   Model Checking Max   #################")
 
             plt.close()
 
