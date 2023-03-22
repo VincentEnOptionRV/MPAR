@@ -370,7 +370,21 @@ def main():
 
         elif mode == 3:
             print("#################   Model Checking Max   #################")
-
+            print("Définition des états cibles :")
+            etatsCibles = []
+            while len(etatsCibles) == 0:
+                print("Liste des états cibles vide.")
+                notDoneYet = True
+                while notDoneYet:
+                    print("Ajouter un état dans la liste des états cibles (laisser vide pour terminer)")
+                    e = input()
+                    if e == '':
+                        notDoneYet = False
+                    elif e in graphe.mdp.states:
+                        etatsCibles.append(e)
+                    else:
+                        print("État introuvable.")
+            modelChecking.modelCheckingMaxMin(graphe.mdp, etatsCibles)
             plt.close()
 
         elif mode == 4:
