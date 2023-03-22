@@ -3,6 +3,7 @@ from gramLexer import gramLexer
 from gramListener import gramListener
 from gramParser import gramParser
 import numpy as np
+import tqdm
 
         
 class gramPrintListener(gramListener):
@@ -203,10 +204,9 @@ class Simulation:
     def monteCarlo(self, s, n, epsilon, delta):
         i_s = [np.where(self.mdp.states == state)[0][0] for state in s]
         N = int((np.log(2) - np.log(delta)) / (2*epsilon)**2)
-        print(f'\r>> Nombre de simulations : {N}')
         r = 0
 
-        for _ in range(N):
+        for _ in tqdm.tqdm(range(N)):
             self.__init__(self.mdp, True, False)
 
             for _ in range(n + 1):
@@ -245,12 +245,14 @@ class Simulation:
             logRm += np.log(1 - gamma1) - np.log(1 - gamma0)
 
         if logA <= logRm:
-            print('Accept H1')
+            # print('Accept H1')
+            return m, dm/m, False
 
         if logRm <= logB:
-            print('Accept H0')
+            # print('Accept H0')
+            return m, dm/m, True
 
-        return m, dm/m
+        
 
 
 def main():

@@ -166,13 +166,13 @@ def check_file():
 
 def check_mode():
     if len(sys.argv) <= 2:
-        raise Exception("Veuillez sélectionner un mode de fonctionnement. Modes possibles :\nsimu (simulation), \nacces (ModCheck accessibilité), \nsmc (ModCheck Statistique), \nqlearn (Qlearning)")
+        raise Exception("Veuillez sélectionner un mode de fonctionnement. Modes possibles :\nsimu (simulation), \nmc (Model Checking accessibilité), \nsmc (Model Checking Statistique), \nminmax (Model Checking par MinMax), \nqlearn (Qlearning)")
     else:
         mode_dict = {
             "simu":0,
             "mc":1,
             "smc":2,
-            "minmax":3
+            "minmax":3,
             "qlearn":4
         }
         try:
@@ -211,7 +211,7 @@ def main():
             graphe.simulation = Simulation(graphe.mdp, auto)
 
             print('\n#################   Simulation Start   #################\n')
-            print(graphe.mdp)
+            
             for _ in range(n):
 
                 graphe.update()
@@ -265,9 +265,7 @@ def main():
                     n = None
 
             modelChecking.modelChecking(graphe.mdp, adversary, etatsCibles, n)
-            plt.ioff()
-            print("Close window to exit.")
-            plt.show()
+            plt.close()
 
         elif mode == 2:
             print("#################   Model Checking Statistique   #################")
@@ -324,7 +322,8 @@ def main():
                         d = float(d)
                     except:
                         ok = False
-                print(graphe.simulation.monteCarlo(etatsCibles, n, eps, d))
+                proba = graphe.simulation.monteCarlo(etatsCibles, n, eps, d)
+                print(f"Probabilité d'atteindre le(s) sommet(s) d'arrivée depuis le sommet de départ : {proba:.2f}")
             else:
                 print("Entrer la valeur de theta.")
                 ok = False
@@ -364,18 +363,15 @@ def main():
                         b = float(b)
                     except:
                         ok = False
-                print(graphe.simulation.SPRT(t, eps, a, b, etatsCibles, n))
+                m, dm, accept = graphe.simulation.SPRT(t, eps, a, b, etatsCibles, n)
+                print(f"")
 
-            plt.ioff()
-            print("Close window to exit.")
-            plt.show()
+            plt.close()
 
         elif mode == 3:
             print("#################   Model Checking MinMax   #################")
-            
-            plt.ioff()
-            print("Close window to exit.")
-            plt.show()
+
+            plt.close()
 
         elif mode == 4:
             if graphe.mdp.rewards is None:
