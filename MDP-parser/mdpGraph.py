@@ -295,16 +295,16 @@ def main():
                     else:
                         print("État introuvable.")
             graphe.simulation = Simulation(graphe.mdp, True)
+            print("Entrer le nombre maximal de transitions autorisé.")
+            ok = False
+            while not ok:
+                ok = True
+                n = input()
+                try:
+                    n = int(n)
+                except:
+                    ok = False
             if m == 1:
-                print("Entrer le nombre maximal de transitions autorisé.")
-                ok = False
-                while not ok:
-                    ok = True
-                    n = input()
-                    try:
-                        n = int(n)
-                    except:
-                        ok = False
                 print("Entrer la valeur de epsilon.")
                 ok = False
                 while not ok:
@@ -325,8 +325,45 @@ def main():
                         ok = False
                 print(graphe.simulation.monteCarlo(etatsCibles, n, eps, d))
             else:
-                
-                print(graphe.simulation.SPRT(0.16, 1e-3, 0.01, 0.01, 'S7', 10))
+                print("Entrer la valeur de theta.")
+                ok = False
+                while not ok:
+                    ok = True
+                    t = input()
+                    try:
+                        t = float(t)
+                    except:
+                        ok = False
+                print("Entrer la valeur de epsilon.")
+                ok = False
+                while not ok:
+                    ok = True
+                    eps = input()
+                    try:
+                        eps = float(eps)
+                    except:
+                        ok = False
+
+                print("Entrer la valeur de alpha.")
+                ok = False
+                while not ok:
+                    ok = True
+                    a = input()
+                    try:
+                        a = float(a)
+                    except:
+                        ok = False
+
+                print("Entrer la valeur de beta.")
+                ok = False
+                while not ok:
+                    ok = True
+                    b = input()
+                    try:
+                        b = float(b)
+                    except:
+                        ok = False
+                print(graphe.simulation.SPRT(t, eps, a, b, etatsCibles, n))
 
             plt.ioff()
             print("Close window to exit.")

@@ -218,7 +218,7 @@ class Simulation:
         return r / N
 
     def SPRT(self, theta, epsilon, alpha, beta, s, n):
-        i_s = np.where(self.mdp.states == s)[0][0]
+        i_s = [np.where(self.mdp.states == state)[0][0] for state in s]
 
         dm = 0
         m = 0
@@ -237,7 +237,7 @@ class Simulation:
             m += 1
             for _ in range(n):
                 self.next()
-                if self.i_currentState == i_s:
+                if self.i_currentState in i_s:
                     dm += 1
                     logRm += np.log(gamma1 / gamma0) - np.log(1 - gamma1) + np.log(1 - gamma0)
                     break
