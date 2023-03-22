@@ -172,12 +172,13 @@ def check_mode():
             "simu":0,
             "mc":1,
             "smc":2,
-            "qlearn":3
+            "minmax":3
+            "qlearn":4
         }
         try:
             mode = mode_dict[str(sys.argv[2])]
         except:
-            raise Exception("Erreur dans le mode. Modes possibles :\nsimu (simulation), \mc (Model Checking accessibilité), \smc (Model Checking Statistique), \nqlearn (Qlearning)")
+            raise Exception("Erreur dans le mode. Modes possibles :\nsimu (simulation), \nmc (Model Checking accessibilité), \nsmc (Model Checking Statistique), \nminmax (Model Checking par MinMax), \nqlearn (Qlearning)")
     return mode
 
 def main():
@@ -368,9 +369,15 @@ def main():
             plt.ioff()
             print("Close window to exit.")
             plt.show()
-            pass
 
         elif mode == 3:
+            print("#################   Model Checking MinMax   #################")
+            
+            plt.ioff()
+            print("Close window to exit.")
+            plt.show()
+
+        elif mode == 4:
             if graphe.mdp.rewards is None:
                 print("Impossible de faire du Qlearning sur un MDP sans récompenses.")
             print("#################   Qlearning   #################")
