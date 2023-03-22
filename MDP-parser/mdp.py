@@ -267,7 +267,7 @@ def main():
 
     import modelChecking
     adversary = modelChecking.buildAdversary(mdp)
-    modelChecking.modelChecking(mdp, adversary, ['S12'], 3)
+    modelChecking.modelChecking(mdp, adversary, ['S12','S11'],3)
     
 
     # simu = Simulation(mdp, automatic=True)

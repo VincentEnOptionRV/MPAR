@@ -4,6 +4,7 @@ import networkx as nx
 from netgraph import Graph, get_curved_edge_paths, get_fruchterman_reingold_layout
 import sys
 from qlearning import qlearning
+import modelChecking
 
 class MDPGraph:
     def __init__(self, fichier):
@@ -141,15 +142,18 @@ class MDPGraph:
         self.node_color[self.mdp.states[self.simulation.i_currentState]] = "#00b31b"
         
 
-def print_adv(mdp, adv):
+def print_adv(mdp, adv, advVal, infboucle):
     oneNotZero = False
     for i in range(len(adv)):
         choix = adv[i]
         if choix > 0:
             oneNotZero = True
-            print(f"From state {mdp.states[i]}, chose action {mdp.actions[choix]}")
+            print(f"From state {mdp.states[i]}, chose action {mdp.actions[choix]}. Score = {advVal[i]:.2f}")
+        elif i in infboucle and mdp.accessible[i][0] != 0:
+            oneNotZero = True
+            print(f"From state {mdp.states[i]}, chose action {mdp.actions[mdp.accessible[i][0]]}. Score = {advVal[i]:.2f}")
     if not oneNotZero:
-        print("There are no decisions to take with this starting set of states or the number of iteration is too low.")
+        print("There are no decisions to take with this starting set of states.")
 
 def check_file():
     if len(sys.argv) <= 1:
@@ -176,67 +180,177 @@ def check_mode():
 
 def main():
     # python mdpGraph.py fichier mode
-    graphe = MDPGraph(check_file())
+    file = check_file()
+    graphe = MDPGraph(file)
 
     mode = check_mode()
+    adversary = None
 
     plt.ion()
+    graphe.show()
     plt.show()
 
-    if mode == 0:
-        print("Entrer le temps de pause (en seconde) entre deux frames de la simulation :")
-        half_pause_time = int(input())/2
-        print("Entrer le nombre d'itérations de la simulation :")
-        n = int(input())
-        ok = False
-        print("Mode automatique ? O/N")
-        while not ok:
-            auto = str(input())
-            ok = auto in ['O','o','N','n']
-            auto = auto == 'O' or auto == 'o'
+    end = False
+    while not end:
+        end = True
+        if mode == 0:
+            print("Entrer le temps de pause (en seconde) entre deux frames de la simulation :")
+            half_pause_time = int(input())/2
+            print("Entrer le nombre d'itérations de la simulation :")
+            n = int(input())
+            ok = False
+            print("Mode automatique ? O/N")
+            while not ok:
+                auto = str(input())
+                ok = auto in ['O','o','N','n']
+                auto = auto == 'O' or auto == 'o'
+            
+            graphe.simulation = Simulation(graphe.mdp, auto)
+
+            print('\n#################   Simulation Start   #################\n')
+            for _ in range(n):
+
+                graphe.update()
+                plt.clf()
+                graphe.show()
+                plt.pause(half_pause_time)
+
+                graphe.update2()
+                plt.clf()
+                graphe.show()
+                plt.pause(half_pause_time)
+
+                graphe.simulation.next()
+
+            plt.ioff()
+            print('#################   Simulation End   #################\n')
+            print("Close window to exit.")
+            plt.show()
         
-        graphe.simulation = Simulation(graphe.mdp, auto)
+        elif mode == 1:
+            print("#################   Model Checking : Accessibilité   #################")
+            if adversary is None:
+                adversary = modelChecking.buildAdversary(graphe.mdp)
+            
+            print("Définition des états cibles :")
+            etatsCibles = []
+            while len(etatsCibles) == 0:
+                print("Liste des états cibles vide.")
+                notDoneYet = True
+                while notDoneYet:
+                    print("Ajouter un état dans la liste des états cibles (laisser vide pour terminer)")
+                    e = input()
+                    if e == '':
+                        notDoneYet = False
+                    elif e in graphe.mdp.states:
+                        etatsCibles.append(e)
+                    else:
+                        print("État introuvable.")
+            
+            print("Imposer une limite du nombre de transitions ? Si oui, entrer le nombre maximal de transitions autorisé. Sinon, laisser vide.")
+            ok = False
+            while not ok:
+                ok = True
+                n = input()
+                if n!='':
+                    try:
+                        n = int(n)
+                    except:
+                        ok = False
+                else:
+                    n = None
 
-        print('\n#################   Simulation Start   #################\n')
-        for _ in range(n):
+            modelChecking.modelChecking(graphe.mdp, adversary, etatsCibles, n)
+            plt.ioff()
+            print("Close window to exit.")
+            plt.show()
 
-            graphe.update()
-            plt.clf()
-            graphe.show()
-            plt.pause(half_pause_time)
+        elif mode == 2:
+            print("#################   Model Checking Statistique   #################")
+            plt.ioff()
+            print("Close window to exit.")
+            plt.show()
+            pass
 
-            graphe.update2()
-            plt.clf()
-            graphe.show()
-            plt.pause(half_pause_time)
+        elif mode == 3:
+            if graphe.mdp.rewards is None:
+                print("Impossible de faire du Qlearning sur un MDP sans récompenses.")
+            print("#################   Qlearning   #################")
+            print("Entrer la valeur de gamma pour l'algorithme")
+            ok = False
+            while not ok:
+                ok = True
+                gamma = input()
+                try:
+                    gamma = float(gamma)
+                except:
+                    ok = False
+            print("Entrer le nombre d'itération de l'algorithme")
+            ok = False
+            while not ok:
+                ok = True
+                n = input()
+                try:
+                    n = int(n)
+                except:
+                    ok = False
+            print("Calcul du meilleur adversaire...")
+            adv, advVal, Q, infboucle = qlearning(graphe.mdp, gamma, n)
+            print("Exécution de l'algorithme terminée. Vérification de la validité du résultat...")
 
-            graphe.simulation.next()
+            valid = False
+            while not valid:
+                valid = True
+                failed = []
+                for i in range(len(adv)):
+                    choix = adv[i]
+                    i_possibleAction = graphe.mdp.accessible[i]
+                    if choix == 0 and i_possibleAction != [0]:
+                        if i not in infboucle:
+                            if valid:
+                                print(f"Attention, le nombre d'itérations choisi ({n}) était trop faible. \nL'algorithme de qlearning va être relancé pour {2*n} itérations à partir de l'étape actuelle")
+                            valid = False
+                            failed.append(graphe.mdp.states[i])
+                        else:
+                            adv[i] = graphe.mdp.accessible[i][0]
+                if not valid:
+                    print(f"Sommets pour lesquels on ne sait pas encore choisir d'action : {failed}\n")
+                    n*=2
+                    adv, advVal, Q, infboucle = qlearning(graphe.mdp, gamma, n, Q)
+            print_adv(graphe.mdp, adv, advVal, infboucle)
+            print("Souhaitez vous générer la MC induite par cet adversaire et lancer un autre mode à partir de cette dernière ? O/N")
+            ok = False
+            while not ok:
+                v = str(input())
+                ok = v in ['O','o','N','n']
+                v = v == 'O' or v == 'o'
+            if v:
+                end = False
+                print("Quel mode souhaitez vous lancer ? Modes possibles : simu (simulation), acces (ModCheck accessibilité), smc (ModCheck Statistique)")
+                mode_dict = {
+                    "simu":0,
+                    "acces":1,
+                    "smc":2
+                }
+                wrong = True
+                while wrong:
+                    wrong = False
+                    m = input()
+                    try:
+                        mode = mode_dict[m]
+                    except:
+                        wrong = True
+                
+                if mode == 0 or mode == 2: # alors on doit générer la mc, sinon pas la peine ça se fait tout seul dans le checking d'accessibilité.
+                    pass 
+                else:
+                    adversary = adv
+            else:
+                plt.ioff()
+                print("Close window to exit.")
+                plt.show()
 
-        plt.ioff()
-        print('#################   Simulation End   #################\n')
-        print("Close window to exit.")
-        plt.show()
-    
-    elif mode == 1:
-        print("#################   Model Checking : Accessibilité   #################")
-        pass
 
-    elif mode == 2:
-        print("#################   Model Checking Statistique   #################")
-        pass
-
-    elif mode == 3:
-        if graphe.mdp.rewards is None:
-            print("Impossible de faire du Qlearning sur un MDP sans récompenses.")
-        print("#################   Qlearning   #################")
-        print("Entrer la valeur de gamma pour l'algorithme")
-        gamma = float(input())
-        print("Entrer le nombre d'itération de l'algorithme")
-        n = int(input())
-        print("Calcul du meilleur adversaire...")
-        adv, advVal = qlearning(graphe.mdp, gamma, n)
-        print("Exécution de l'algorithme terminée !")
-        print_adv(graphe.mdp,adv)
 
 if __name__ == '__main__':
     main()

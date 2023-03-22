@@ -26,7 +26,7 @@ def buildAdversary(mdp:MDP):
         else:
             adversary[i_state] = i_possibleActions[0]
             # print(mdp)
-
+    print("Adversary Built")
     return adversary
 
 
