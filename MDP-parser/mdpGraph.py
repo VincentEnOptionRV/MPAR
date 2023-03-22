@@ -363,8 +363,22 @@ def main():
                         b = float(b)
                     except:
                         ok = False
-                m, dm, accept = graphe.simulation.SPRT(t, eps, a, b, etatsCibles, n)
-                print(f"")
+                
+                print("Entrer le nombre maximal de simulations.")
+                ok = False
+                while not ok:
+                    ok = True
+                    nmax = input()
+                    try:
+                        nmax = int(nmax)
+                    except:
+                        ok = False
+                m, dm, accept = graphe.simulation.SPRT(t, eps, a, b, etatsCibles, n, nmax)
+                if accept:
+                    print(f"Gamma >= theta + espsilon")
+                else:
+                    print(f"Gamma <= theta + espsilon")
+
 
             plt.close()
 
