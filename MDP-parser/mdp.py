@@ -217,7 +217,7 @@ class Simulation:
 
         return r / N
 
-    def SPRT(self, theta, epsilon, alpha, beta, s, n):
+    def SPRT(self, theta, epsilon, alpha, beta, s, n, nb_simu):
         i_s = [np.where(self.mdp.states == state)[0][0] for state in s]
 
         dm = 0
@@ -231,7 +231,11 @@ class Simulation:
 
         logRm = dm * np.log(gamma1) + (m-dm)*np.log(1 - gamma1) - dm * np.log(gamma0) - (m-dm)*np.log(1 - gamma0)
 
-        while logB < logRm and  logRm < logA:
+        for _ in range(nb_simu):
+            if logA <= logRm: return m, dm/m, False
+            if logRm <= logB: return m, dm/m, True
+           
+
             self.__init__(self.mdp, True, False)
 
             m += 1
@@ -243,16 +247,6 @@ class Simulation:
                     break
             
             logRm += np.log(1 - gamma1) - np.log(1 - gamma0)
-
-        if logA <= logRm:
-            # print('Accept H1')
-            return m, dm/m, False
-
-        if logRm <= logB:
-            # print('Accept H0')
-            return m, dm/m, True
-
-        
 
 
 def main():
