@@ -198,7 +198,7 @@ def main():
         end = True
         if mode == 0:
             print("Entrer le temps de pause (en seconde) entre deux frames de la simulation :")
-            half_pause_time = int(input())/2
+            half_pause_time = float(input())/2
             print("Entrer le nombre d'itérations de la simulation :")
             n = int(input())
             ok = False
@@ -378,7 +378,7 @@ def main():
                     if accept:
                         print(f"Gamma >= theta + espsilon")
                     else:
-                        print(f"Gamma <= theta + espsilon")
+                        print(f"Gamma <= theta - espsilon")
                 except:
                     pass
 
